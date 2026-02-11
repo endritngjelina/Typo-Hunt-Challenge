@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typo Hunt Challenge - Professional Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+        }
+
+        .game-setup {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        .difficulty-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .difficulty-btn {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .difficulty-btn.selected {
+            border-color: #3498db;
+            background: #ebf3fd;
+        }
+
+        .difficulty-btn h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .difficulty-btn p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            font-weight: 600;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            display: none;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .score {
+            background: linear-gradient(45deg, #27ae60, #229954);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: #ecf0f1;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .text-content {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .text-content span {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .text-content span:hover {
+            background: rgba(52, 152, 219, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .error {
+            background: rgba(231, 76, 60, 0.2) !important;
+            border-bottom: 2px wavy #e74c3c;
+            animation: pulse 1s infinite;
+        }
+
+        .found {
+            background: rgba(39, 174, 96, 0.3) !important;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .hint-btn, .skip-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .hint-btn {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .skip-btn {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .hint-btn:hover, .skip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .results {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            display: none;
+            text-align: center;
+        }
+
+        .results h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .performance-badge {
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+
+        .excellent {
+            background: linear-gradient(45deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .good {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .needs-improvement {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .play-again-btn {
+            background: linear-gradient(45deg, #8e44ad, #9b59b6);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.4);
+        }
+
+        .streak-indicator {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .combo-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #27ae60, #229954);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 1000;
+            animation: comboPopup 2s ease;
+            display: none;
+        }
+
+        @keyframes comboPopup {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .text-content {
+                font-size: 1.1rem;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Typo Hunt Challenge</h1>
+            <p>Professional Grammar & Spelling Assessment Tool</p>
+        </div>
+
+        <div class="game-setup" id="gameSetup">
+            <h2 style="text-align: center; margin-bottom: 25px; color: #2c3e50;">Select Difficulty Level</h2>
+            <div class="difficulty-selector">
+                <div class="difficulty-btn" data-level="easy">
+                    <h3>📝 Beginner</h3>
+                    <p>5 errors • 3 minutes • Basic spelling & grammar</p>
+                </div>
+                <div class="difficulty-btn selected" data-level="medium">
+                    <h3>📊 Professional</h3>
+                    <p>8 errors • 4 minutes • Advanced grammar & punctuation</p>
+                </div>
+                <div class="difficulty-btn" data-level="hard">
+                    <h3>🎯 Expert</h3>
+                    <p>12 errors • 5 minutes • Complex errors & style issues</p>
+                </div>
+            </div>
+            <button class="start-btn" onclick="startGame()">Begin Challenge</button>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <div class="game-header">
+                <div class="timer" id="timer">⏱️ 00:00</div>
+                <div class="score">
+                    <span id="score">0</span> / <span id="totalErrors">0</span> Found
+                    <div class="streak-indicator" id="streak" style="display: none;">🔥 0</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="text-content" id="textContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+
+            <div class="game-controls">
+                <button class="hint-btn" onclick="showHint()" id="hintBtn">💡 Hint (3 remaining)</button>
+                <button class="skip-btn" onclick="skipCurrent()">⏭️ Skip Current</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2 id="resultTitle">Challenge Complete!</h2>
+            <div class="performance-badge" id="performanceBadge"></div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="finalScore">0</h3>
+                    <p>Errors Found</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="accuracy">0%</h3>
+                    <p>Accuracy</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="timeUsed">0:00</h3>
+                    <p>Time Used</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="maxStreak">0</h3>
+                    <p>Best Streak</p>
+                </div>
+            </div>
+            <button class="play-again-btn" onclick="resetGame()">🔄 Play Again</button>
+        </div>
+    </div>
+
+    <div class="combo-popup" id="comboPopup">
+        COMBO! 🔥
+    </div>
+
+    <script>
+        class TypoHuntGame {
+            constructor() {
+                this.currentLevel = 'medium';
+                this.gameTimer = null;
+                this.timeRemaining = 0;
+                this.score = 0;
+                this.totalErrors = 0;
+                this.currentErrors = [];
+                this.foundErrors = [];
+                this.hintsUsed = 0;
+                this.maxHints = 3;
+                this.streak = 0;
+                this.maxStreak = 0;
+                this.wrongClicks = 0;
+                this.gameStartTime = 0;
+                this.isGameActive = false;
+
+                this.difficulties = {
+                    easy: { time: 180, errorCount: 5 },
+                    medium: { time: 240, errorCount: 8 },
+                    hard: { time: 300, errorCount: 12 }
+                };
+
+                this.textSamples = {
+                    easy: [
+                        {
+                            text: "The quick brown fox jumps over the lazy dog. This sentance contains several mispelled words and grammer errors. It's a good excersize for beginers who want to practise there editing skills. The dog was laying in the sun, compleatly unaware of the fox's presence.",
+                            errors: [
+                                { word: "sentance", correct: "sentence", type: "spelling" },
+                                { word: "mispelled", correct: "misspelled", type: "spelling" },
+                                { word: "grammer", correct: "grammar", type: "spelling" },
+                                { word: "excersize", correct: "exercise", type: "spelling" },
+                                { word: "beginers", correct: "beginners", type: "spelling" }
+                            ]
+                        }
+                    ],
+                    medium: [
+                        {
+                            text: "In todays fast-paced business environment, it's crucial to maintain high standards of communication. Many profesionals struggle with there writing skills, often confusing 'affect' and 'effect' in they're correspondence. The companys quarterly report showed significent growth, however the board was'nt entirely satisfied with the results. It's important to remember that good writing skills can effect your career prospects dramatically.",
+                            errors: [
+                                { word: "todays", correct: "today's", type: "punctuation" },
+                                { word: "profesionals", correct: "professionals", type: "spelling" },
+                                { word: "there", correct: "their", type: "grammar" },
+                                { word: "they're", correct: "their", type: "grammar" },
+                                { word: "companys", correct: "company's", type: "punctuation" },
+                                { word: "significent", correct: "significant", type: "spelling" },
+                                { word: "was'nt", correct: "wasn't", type: "punctuation" },
+                                { word: "effect", correct: "affect", type: "grammar" }
+                            ]
+                        }
+                    ],
+                    hard: [
+                        {
+                            text: "The principle investigator, whom had been studying the phenomena for over a decade, published his findings in a prestigous journal. Between you and I, the research methodology seemed flawed from the beginning. The data suggests that their are multiple factors effecting the outcome, irregardless of the initial hypothesis. The team comprised of leading experts, however, they could not reach a consensus on weather the results were statistically significant. It's phenomena like this that makes scientific research so challenging and rewarding simultaniously.",
+                            errors: [
+                                { word: "principle", correct: "principal", type: "grammar" },
+                                { word: "whom", correct: "who", type: "grammar" },
+                                { word: "phenomena", correct: "phenomenon", type: "grammar" },
+                                { word: "prestigous", correct: "prestigious", type: "spelling" },
+                                { word: "I", correct: "me", type: "grammar" },
+                                { word: "their", correct: "there", type: "grammar" },
+                                { word: "effecting", correct: "affecting", type: "grammar" },
+                                { word: "irregardless", correct: "regardless", type: "grammar" },
+                                { word: "comprised of", correct: "composed of", type: "grammar" },
+                                { word: "weather", correct: "whether", type: "spelling" },
+                                { word: "phenomena", correct: "phenomena", type: "grammar" },
+                                { word: "simultaniously", correct: "simultaneously", type: "spelling" }
+                            ]
+                        }
+                    ]
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Difficulty selection
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        this.currentLevel = btn.dataset.level;
+                    });
+                });
+            }
+
+            startGame() {
+                this.resetGameState();
+                this.isGameActive = true;
+                
+                // Hide setup, show game
+                document.getElementById('gameSetup').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'block';
+                document.getElementById('results').style.display = 'none';
+
+                // Set up game parameters
+                const difficulty = this.difficulties[this.currentLevel];
+                this.timeRemaining = difficulty.time;
+                this.totalErrors = difficulty.errorCount;
+                
+                // Load text content
+                this.loadTextContent();
+                
+                // Start timer
+                this.gameStartTime = Date.now();
+                this.startTimer();
+                
+                // Update UI
+                this.updateUI();
+            }
+
+            resetGameState() {
+                this.score = 0;
+                this.foundErrors = [];
+                this.hintsUsed = 0;
+                this.streak = 0;
+                this.maxStreak = 0;
+                this.wrongClicks = 0;
+                this.isGameActive = true;
+                
+                if (this.gameTimer) {
+                    clearInterval(this.gameTimer);
+                }
+            }
+
+            loadTextContent() {
+                const textData = this.textSamples[this.currentLevel][0];
+                this.currentErrors = [...textData.errors];
+                
+                // Create clickable spans for each word
+                const words = textData.text.split(/(\s+|[.,!?;:])/);
+                const textContainer = document.getElementById('textContent');
+                textContainer.innerHTML = '';
+
+                words.forEach((word, index) => {
+                    const span = document.createElement('span');
+                    span.textContent = word;
+                    span.dataset.index = index;
+                    span.addEventListener('click', () => this.handleWordClick(word.trim(), span));
+                    textContainer.appendChild(span);
+                });
+            }
+
+            handleWordClick(clickedWord, element) {
+                if (!this.isGameActive) return;
+
+                const cleanWord = clickedWord.replace(/[.,!?;:]/g, '');
+                const errorIndex = this.currentErrors.findIndex(error => 
+                    error.word.toLowerCase() === cleanWord.toLowerCase()
+                );
+
+                if (errorIndex !== -1 && !this.foundErrors.includes(errorIndex)) {
+                    // Correct error found
+                    this.foundErrors.push(errorIndex);
+                    this.score++;
+                    this.streak++;
+                    this.maxStreak = Math.max(this.maxStreak, this.streak);
+                    
+                    element.classList.add('found');
+                    element.title = `Correct: "${this.currentErrors[errorIndex].correct}" (${this.currentErrors[errorIndex].type})`;
+                    
+                    // Show combo popup for streaks
+                    if (this.streak >= 3) {
+                        this.showComboPopup();
+                    }
+                    
+                    // Check for game completion
+                    if (this.foundErrors.length >= this.totalErrors) {
+                        this.endGame(true);
+                    }
+                } else {
+                    // Wrong click
+                    this.wrongClicks++;
+                    this.streak = 0;
+                    element.style.background = 'rgba(231, 76, 60, 0.3)';
+                    setTimeout(() => {
+                        element.style.background = '';
+                    }, 500);
+                }
+                
+                this.updateUI();
+            }
+
+            showHint() {
+                if (this.hintsUsed >= this.maxHints || !this.isGameActive) return;
+                
+                // Find an unfound error
+                const unfoundErrors = this.currentErrors.filter((_, index) => 
+                    !this.foundErrors.includes(index)
+                );
+                
+                if (unfoundErrors.length > 0) {
+                    const randomError = unfoundErrors[Math.floor(Math.random() * unfoundErrors.length)];
+                    const errorIndex = this.currentErrors.indexOf(randomError);
+                    
+                    // Highlight the error word
+                    const textSpans = document.querySelectorAll('#textContent span');
+                    textSpans.forEach(span => {
+                        if (span.textContent.trim().replace(/[.,!?;:]/g, '').toLowerCase() === randomError.word.toLowerCase()) {
+                            span.classList.add('error');
+                            setTimeout(() => {
+                                if (!span.classList.contains('found')) {
+                                    span.classList.remove('error');
+                                }
+                            }, 3000);
+                        }
+                    });
+                    
+                    this.hintsUsed++;
+                    document.getElementById('hintBtn').textContent = `💡 Hint (${this.maxHints - this.hintsUsed} remaining)`;
+                    
+                    if (this.hintsUsed >= this.maxHints) {
+                        document.getElementById('hintBtn').disabled = true;
+                        document.getElementById('hintBtn').style.opacity = '0.5';
+                    }
+                }
+            }
+
+            skipCurrent() {
+                if (!this.isGameActive) return;
+                
+                // End current round and start next
+                this.endGame(false);
+            }
+
+            showComboPopup() {
+                const popup = document.getElementById('comboPopup');
+                popup.textContent = `COMBO! 🔥 ${this.streak}x`;
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 2000);
+            }
+
+            startTimer() {
+                this.gameTimer = setInterval(() => {
+                    this.timeRemaining--;
+                    this.updateTimer();
+                    
+                    if (this.timeRemaining <= 0) {
+                        this.endGame(false);
+                    }
+                }, 1000);
+            }
+
+            updateTimer() {
+                const minutes = Math.floor(this.timeRemaining / 60);
+                const seconds = this.timeRemaining % 60;
+                document.getElementById('timer').textContent = 
+                    `⏱️ ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('totalErrors').textContent = this.totalErrors;
+                
+                // Update progress bar
+                const progress = (this.score / this.totalErrors) * 100;
+                document.getElementById('progressFill').style.width = `${progress}%`;
+                
+                // Update streak indicator
+                const streakEl = document.getElementById('streak');
+                if (this.streak > 0) {
+                    streakEl.style.display = 'block';
+                    streakEl.textContent = `🔥 ${this.streak}`;
+                } else {
+                    streakEl.style.display = 'none';
+                }
+            }
+
+            endGame(completed) {
+                this.isGameActive = false;
+                clearInterval(this.gameTimer);
+                
+                // Calculate results
+                const timeUsed = this.difficulties[this.currentLevel].time - this.timeRemaining;
+                const accuracy = Math.round((this.score / (this.score + this.wrongClicks)) * 100) || 0;
+                
+                // Show results
+                document.getElementById('gameArea').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                
+                // Update result displays
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('accuracy').textContent = `${accuracy}%`;
+                document.getElementById('timeUsed').textContent = 
+                    `${Math.floor(timeUsed / 60)}:${(timeUsed % 60).toString().padStart(2, '0')}`;
+                document.getElementById('maxStreak').textContent = this.maxStreak;
+                
+                // Performance evaluation
+                let performance = 'needs-improvement';
+                let performanceText = 'Keep Practicing! 📈';
+                
+                if (this.score >= this.totalErrors * 0.9) {
+                    performance = 'excellent';
+                    performanceText = 'Outstanding Performance! 🏆';
+                } else if (this.score >= this.totalErrors * 0.7) {
+                    performance = 'good';
+                    performanceText = 'Great Job! 🌟';
+                }
+                
+                document.getElementById('performanceBadge').className = `performance-badge ${performance}`;
+                document.getElementById('performanceBadge').textContent = performanceText;
+                
+                document.getElementById('resultTitle').textContent = 
+                    completed ? 'Perfect Score!' : 'Challenge Complete!';
+            }
+
+            resetGame() {
+                document.getElementById('results').style.display = 'none';
+                document.getElementById('gameSetup').style.display = 'block';
+                
+                // Reset UI elements
+                document.getElementById('hintBtn').disabled = false;
+                document.getElementById('hintBtn').style.opacity = '1';
+                document.getElementById('hintBtn').textContent = `💡 Hint (3 remaining)`;
+            }
+        }
+
+        // Global functions for HTML onclick handlers
+        let game;
+
+        function initGame() {
+            game = new TypoHuntGame();
+        }
+
+        function startGame() {
+            game.startGame();
+        }
+
+        function showHint() {
+            game.showHint();
+        }
+
+        function skipCurrent() {
+            game.skipCurrent();
+        }
+
+        function resetGame() {
+            game.resetGame();
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
