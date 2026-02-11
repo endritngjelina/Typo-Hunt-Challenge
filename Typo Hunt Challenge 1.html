@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typo Hunt Challenge - Professional Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            width: 100%;
+            min-height: 700px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .timer {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 12px 18px;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-ring {
+            width: 50px;
+            height: 50px;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            fill: transparent;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 4;
+        }
+
+        .progress-ring-fill {
+            fill: transparent;
+            stroke: #10b981;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .main-content {
+            padding: 30px;
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 12px 24px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border-color: transparent;
+        }
+
+        .difficulty-btn.easy { border-color: #10b981; color: #10b981; }
+        .difficulty-btn.medium { border-color: #f59e0b; color: #f59e0b; }
+        .difficulty-btn.hard { border-color: #ef4444; color: #ef4444; }
+        .difficulty-btn.expert { border-color: #8b5cf6; color: #8b5cf6; }
+
+        .text-area {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 25px;
+            font-size: 16px;
+            line-height: 1.8;
+            font-family: 'Georgia', serif;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: pointer;
+            user-select: text;
+            min-height: 300px;
+        }
+
+        .word {
+            position: relative;
+            display: inline;
+            transition: all 0.2s ease;
+        }
+
+        .word.error {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #dc2626;
+            padding: 2px 4px;
+            border-radius: 4px;
+            text-decoration: underline;
+            text-decoration-color: #dc2626;
+            text-decoration-style: wavy;
+        }
+
+        .word.found {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #059669;
+            padding: 2px 4px;
+            border-radius: 4px;
+            animation: foundPulse 0.6s ease;
+        }
+
+        .word.missed {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #d97706;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        @keyframes foundPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .game-over-screen.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .game-over-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .game-over-screen.show .game-over-content {
+            transform: scale(1);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .result-item {
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .achievements {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .achievement {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            animation: achievementPop 0.5s ease;
+        }
+
+        @keyframes achievementPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .hint-system {
+            background: #e0f2fe;
+            border: 2px solid #0284c7;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .hint-system.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .leaderboard {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .performance-chart {
+            width: 100%;
+            height: 150px;
+            margin: 20px 0;
+            background: #f1f5f9;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .stats-bar {
+                justify-content: center;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .difficulty-selector {
+                justify-content: center;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="title">Typo Hunt Challenge</div>
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">Score</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="found">0</div>
+                    <div class="stat-label">Found</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="accuracy">100%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="timer">
+                    <div class="stat-value" id="timeLeft">60</div>
+                    <div class="stat-label">Seconds</div>
+                </div>
+                <svg class="progress-ring" width="50" height="50">
+                    <circle class="progress-ring-circle" cx="25" cy="25" r="20"></circle>
+                    <circle class="progress-ring-fill" cx="25" cy="25" r="20" 
+                            stroke-dasharray="125.6" stroke-dashoffset="0" id="progressCircle"></circle>
+                </svg>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="difficulty-selector">
+                <button class="difficulty-btn easy active" data-difficulty="easy">Easy (5 errors)</button>
+                <button class="difficulty-btn medium" data-difficulty="medium">Medium (8 errors)</button>
+                <button class="difficulty-btn hard" data-difficulty="hard">Hard (12 errors)</button>
+                <button class="difficulty-btn expert" data-difficulty="expert">Expert (15 errors)</button>
+            </div>
+
+            <div class="hint-system" id="hintSystem">
+                <strong>💡 Hint:</strong> <span id="hintText">Click on words that seem incorrect!</span>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn">Start Game</button>
+                <button class="btn btn-secondary" id="pauseBtn" style="display: none;">Pause</button>
+                <button class="btn btn-secondary" id="hintBtn">Get Hint (3 left)</button>
+                <button class="btn btn-secondary" id="skipBtn">Skip Text</button>
+            </div>
+
+            <div class="text-area" id="textArea">
+                Click "Start Game" to begin your typo hunting adventure! Select your difficulty level and prepare to test your editing skills.
+            </div>
+
+            <div class="performance-chart" id="performanceChart" style="display: none;">
+                <canvas width="100%" height="150"></canvas>
+            </div>
+
+            <div class="leaderboard" id="leaderboard" style="display: none;">
+                <h3>🏆 Personal Best Scores</h3>
+                <div id="leaderboardList"></div>
+            </div>
+        </div>
+
+        <div class="game-over-screen" id="gameOverScreen">
+            <div class="game-over-content">
+                <h2 id="gameOverTitle">Time's Up!</h2>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-value" id="finalScore">0</div>
+                        <div class="result-label">Final Score</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value" id="errorsFound">0/0</div>
+                        <div class="result-label">Errors Found</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value" id="finalAccuracy">100%</div>
+                        <div class="result-label">Accuracy</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value" id="wpm">0</div>
+                        <div class="result-label">WPM</div>
+                    </div>
+                </div>
+                <div class="achievements" id="achievements"></div>
+                <div style="margin-top: 25px;">
+                    <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+                    <button class="btn btn-secondary" id="newTextBtn">New Text</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TypoHuntGame {
+            constructor() {
+                this.gameState = {
+                    isPlaying: false,
+                    isPaused: false,
+                    currentDifficulty: 'easy',
+                    timeLeft: 60,
+                    score: 0,
+                    errorsFound: 0,
+                    totalErrors: 0,
+                    clicks: 0,
+                    hintsLeft: 3,
+                    currentTextIndex: 0,
+                    startTime: null
+                };
+
+                this.gameTexts = {
+                    easy: [
+                        {
+                            text: "The qick brown fox jumps over the lazy dog. This sentance contains several obvius mistakes that you should be able to find easilly. Weather you can spot them all dependes on your attention to detial.",
+                            errors: ["qick", "sentance", "obvius", "easilly", "Weather", "dependes", "detial"]
+                        },
+                        {
+                            text: "I beleive that practise makes perfect. The athelte trained every day to achive there goals. It's importent to stay focussed and never loose hope when faceing challanges.",
+                            errors: ["beleive", "practise", "athelte", "achive", "there", "importent", "focussed", "loose", "faceing", "challanges"]
+                        }
+                    ],
+                    medium: [
+                        {
+                            text: "The commitee met to discus the new policys for employes. They're decission was to implament changes that would benifit the hole organization. Each member had there own perspectiv on the mater.",
+                            errors: ["commitee", "discus", "policys", "employes", "They're", "decission", "implament", "benifit", "hole", "there", "perspectiv", "mater"]
+                        },
+                        {
+                            text: "Recieving feedback is cruical for profesional developement. It helps indentify areas were improvment is necesary. The proces should be handel with sensativity and respect for the individuel.",
+                            errors: ["Recieving", "cruical", "profesional", "developement", "indentify", "were", "improvment", "necesary", "proces", "handel", "sensativity", "individuel"]
+                        }
+                    ],
+                    hard: [
+                        {
+                            text: "The scientests were fasinated by the phenomina they obsrved during there expirement. The hypothasis needed to be carefuly tested to determin it's validity. There conclussions would effect the entire feild of reasearch.",
+                            errors: ["scientests", "fasinated", "phenomina", "obsrved", "there", "expirement", "hypothasis", "carefuly", "determin", "it's", "conclussions", "effect", "feild", "reasearch"]
+                        },
+                        {
+                            text: "The restauraunt recieved excelent reveiws from crittics who apreciated the chef's inovative aproach to tradicional recipees. The atmosphear was discribed as both ellegant and welcoming to geusts.",
+                            errors: ["restauraunt", "recieved", "excelent", "reveiws", "crittics", "apreciated", "inovative", "aproach", "tradicional", "recipees", "atmosphear", "discribed", "ellegant", "geusts"]
+                        }
+                    ],
+                    expert: [
+                        {
+                            text: "The pharmeceutical compeny anounced there newest discuvery would revulutionize treatement of chronick illnesess. The medacine showed promissing resultes in prelimanary triels conduckted by independant researchurs at prestigeous instituetions.",
+                            errors: ["pharmeceutical", "compeny", "anounced", "there", "discuvery", "revulutionize", "treatement", "chronick", "illnesess", "medacine", "promissing", "resultes", "prelimanary", "triels", "conduckted", "independant", "researchurs", "prestigeous", "instituetions"]
+                        }
+                    ]
+                };
+
+                this.achievements = [];
+                this.leaderboard = JSON.parse(localStorage.getItem('typoHuntLeaderboard') || '[]');
+                this.performanceHistory = JSON.parse(localStorage.getItem('typoHuntHistory') || '[]');
+
+                this.initializeElements();
+                this.bindEvents();
+                this.updateLeaderboard();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    startBtn: document.getElementById('startBtn'),
+                    pauseBtn: document.getElementById('pauseBtn'),
+                    hintBtn: document.getElementById('hintBtn'),
+                    skipBtn: document.getElementById('skipBtn'),
+                    textArea: document.getElementById('textArea'),
+                    timeLeft: document.getElementById('timeLeft'),
+                    score: document.getElementById('score'),
+                    found: document.getElementById('found'),
+                    accuracy: document.getElementById('accuracy'),
+                    progressCircle: document.getElementById('progressCircle'),
+                    gameOverScreen: document.getElementById('gameOverScreen'),
+                    playAgainBtn: document.getElementById('playAgainBtn'),
+                    newTextBtn: document.getElementById('newTextBtn'),
+                    hintSystem: document.getElementById('hintSystem'),
+                    hintText: document.getElementById('hintText'),
+                    leaderboard: document.getElementById('leaderboard'),
+                    performanceChart: document.getElementById('performanceChart')
+                };
+            }
+
+            bindEvents() {
+                // Difficulty selection
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.gameState.currentDifficulty = e.target.dataset.difficulty;
+                        this.setGameDuration();
+                    });
+                });
+
+                // Game controls
+                this.elements.startBtn.addEventListener('click', () => this.startGame());
+                this.elements.pauseBtn.addEventListener('click', () => this.pauseGame());
+                this.elements.hintBtn.addEventListener('click', () => this.useHint());
+                this.elements.skipBtn.addEventListener('click', () => this.skipText());
+                this.elements.playAgainBtn.addEventListener('click', () => this.playAgain());
+                this.elements.newTextBtn.addEventListener('click', () => this.newText());
+
+                // Text area clicks
+                this.elements.textArea.addEventListener('click', (e) => this.handleWordClick(e));
+            }
+
+            setGameDuration() {
+                const durations = { easy: 60, medium: 90, hard: 120, expert: 150 };
+                this.gameState.timeLeft = durations[this.gameState.currentDifficulty];
+                this.elements.timeLeft.textContent = this.gameState.timeLeft;
+            }
+
+            startGame() {
+                this.gameState.isPlaying = true;
+                this.gameState.isPaused = false;
+                this.gameState.startTime = Date.now();
+                this.setGameDuration();
+                
+                this.loadRandomText();
+                this.elements.startBtn.style.display = 'none';
+                this.elements.pauseBtn.style.display = 'inline-block';
+                
+                this.startTimer();
+                this.showHint("Look for spelling mistakes, grammar errors, and typos!");
+            }
+
+            loadRandomText() {
+                const texts = this.gameTexts[this.gameState.currentDifficulty];
+                const randomIndex = Math.floor(Math.random() * texts.length);
+                const textData = texts[randomIndex];
+                
+                this.gameState.currentText = textData;
+                this.gameState.totalErrors = textData.errors.length;
+                this.gameState.errorsFound = 0;
+                this.gameState.clicks = 0;
+                this.gameState.foundErrors = [];
+                
+                this.renderText();
+                this.updateStats();
+            }
+
+            renderText() {
+                const words = this.gameState.currentText.text.split(/(\s+)/);
+                const html = words.map((word, index) => {
+                    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+                    const isError = this.gameState.currentText.errors.some(error => 
+                        error.toLowerCase() === cleanWord
+                    );
+                    
+                    return `<span class="word" data-word="${word}" data-index="${index}" data-is-error="${isError}">${word}</span>`;
+                }).join('');
+                
+                this.elements.textArea.innerHTML = html;
+            }
+
+            handleWordClick(e) {
+                if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+                
+                const wordSpan = e.target.closest('.word');
+                if (!wordSpan) return;
+                
+                this.gameState.clicks++;
+                
+                const isError = wordSpan.dataset.isError === 'true';
+                const word = wordSpan.dataset.word.replace(/[^\w]/g, '').toLowerCase();
+                
+                if (isError && !this.gameState.foundErrors.includes(word)) {
+                    wordSpan.classList.add('found');
+                    this.gameState.foundErrors.push(word);
+                    this.gameState.errorsFound++;
+                    this.gameState.score += this.calculatePointsForError();
+                    
+                    this.showFloatingPoints(wordSpan, this.calculatePointsForError());
+                    this.checkAchievements();
+                    
+                    if (this.gameState.errorsFound === this.gameState.totalErrors) {
+                        this.completeLevel();
+                    }
+                } else if (!isError) {
+                    wordSpan.style.background = '#fee2e2';
+                    setTimeout(() => {
+                        wordSpan.style.background = '';
+                    }, 500);
+                }
+                
+                this.updateStats();
+            }
+
+            calculatePointsForError() {
+                const difficultyMultiplier = { easy: 10, medium: 15, hard: 20, expert: 25 };
+                const timeBonus = Math.floor(this.gameState.timeLeft / 10);
+                const accuracyBonus = this.getAccuracy() > 90 ? 5 : 0;
+                
+                return difficultyMultiplier[this.gameState.currentDifficulty] + timeBonus + accuracyBonus;
+            }
+
+            showFloatingPoints(element, points) {
+                const floating = document.createElement('div');
+                floating.textContent = `+${points}`;
+                floating.style.cssText = `
+                    position: absolute;
+                    color: #059669;
+                    font-weight: bold;
+                    font-size: 18px;
+                    pointer-events: none;
+                    animation: floatUp 1s ease-out forwards;
+                    z-index: 100;
+                `;
+                
+                const rect = element.getBoundingClientRect();
+                floating.style.left = rect.left + 'px';
+                floating.style.top = rect.top + 'px';
+                
+                document.body.appendChild(floating);
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes floatUp {
+                        0% { transform: translateY(0); opacity: 1; }
+                        100% { transform: translateY(-50px); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                setTimeout(() => {
+                    document.body.removeChild(floating);
+                    document.head.removeChild(style);
+                }, 1000);
+            }
+
+            useHint() {
+                if (this.gameState.hintsLeft <= 0) return;
+                
+                this.gameState.hintsLeft--;
+                this.elements.hintBtn.textContent = `Get Hint (${this.gameState.hintsLeft} left)`;
+                
+                const unfoundErrors = this.gameState.currentText.errors.filter(error => 
+                    !this.gameState.foundErrors.includes(error.toLowerCase())
+                );
+                
+                if (unfoundErrors.length > 0) {
+                    const hintError = unfoundErrors[0];
+                    this.showHint(`Look for the word "${hintError}" - it contains an error!`);
+                    
+                    // Highlight the error word
+                    const wordSpans = document.querySelectorAll('.word');
+                    wordSpans.forEach(span => {
+                        const cleanWord = span.dataset.word.replace(/[^\w]/g, '').toLowerCase();
+                        if (cleanWord === hintError.toLowerCase()) {
+                            span.style.background = 'rgba(59, 130, 246, 0.3)';
+                            setTimeout(() => {
+                                span.style.background = '';
+                            }, 3000);
+                        }
+                    });
+                }
+                
+                if (this.gameState.hintsLeft <= 0) {
+                    this.elements.hintBtn.style.display = 'none';
+                }
+            }
+
+            showHint(message) {
+                this.elements.hintText.textContent = message;
+                this.elements.hintSystem.classList.add('show');
+                
+                setTimeout(() => {
+                    this.elements.hintSystem.classList.remove('show');
+                }, 4000);
+            }
+
+            skipText() {
+                this.loadRandomText();
+                this.showHint("New text loaded! Start hunting for errors!");
+            }
+
+            startTimer() {
+                this.gameTimer = setInterval(() => {
+                    if (this.gameState.isPaused) return;
+                    
+                    this.gameState.timeLeft--;
+                    this.elements.timeLeft.textContent = this.gameState.timeLeft;
+                    
+                    const totalTime = { easy: 60, medium: 90, hard: 120, expert: 150 }[this.gameState.currentDifficulty];
+                    const progress = (totalTime - this.gameState.timeLeft) / totalTime;
+                    const circumference = 2 * Math.PI * 20;
+                    const offset = circumference * progress;
+                    this.elements.progressCircle.style.strokeDashoffset = offset;
+                    
+                    if (this.gameState.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+            }
+
+            pauseGame() {
+                this.gameState.isPaused = !this.gameState.isPaused;
+                this.elements.pauseBtn.textContent = this.gameState.isPaused ? 'Resume' : 'Pause';
+            }
+
+            completeLevel() {
+                clearInterval(this.gameTimer);
+                this.gameState.score += Math.floor(this.gameState.timeLeft * 2); // Time bonus
+                this.achievements.push("Perfect Score! 🎯");
+                this.showHint("Congratulations! All errors found! Loading next level...");
+                
+                setTimeout(() => {
+                    this.loadRandomText();
+                    this.gameState.timeLeft += 30; // Bonus time for completion
+                    this.startTimer();
+                }, 2000);
+            }
+
+            endGame() {
+                clearInterval(this.gameTimer);
+                this.gameState.isPlaying = false;
+                
+                // Mark unfound errors
+                const wordSpans = document.querySelectorAll('.word');
+                wordSpans.forEach(span => {
+                    const cleanWord = span.dataset.word.replace(/[^\w]/g, '').toLowerCase();
+                    const isError = span.dataset.isError === 'true';
+                    
+                    if (isError && !this.gameState.foundErrors.includes(cleanWord)) {
+                        span.classList.add('missed');
+                    }
+                });
+                
+                this.showGameOver();
+                this.saveToLeaderboard();
+                this.savePerformanceData();
+            }
+
+            showGameOver() {
+                const accuracy = this.getAccuracy();
+                const wpm = this.calculateWPM();
+                
+                document.getElementById('finalScore').textContent = this.gameState.score;
+                document.getElementById('errorsFound').textContent = 
+                    `${this.gameState.errorsFound}/${this.gameState.totalErrors}`;
+                document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+                document.getElementById('wpm').textContent = wpm;
+                
+                this.checkAchievements();
+                this.displayAchievements();
+                
+                this.elements.gameOverScreen.classList.add('show');
+            }
+
+            getAccuracy() {
+                if (this.gameState.clicks === 0) return 100;
+                return Math.round((this.gameState.errorsFound / this.gameState.clicks) * 100);
+            }
+
+            calculateWPM() {
+                const timeElapsed = (Date.now() - this.gameState.startTime) / 60000; // minutes
+                const wordsProcessed = this.gameState.currentText.text.split(' ').length;
+                return Math.round(wordsProcessed / timeElapsed);
+            }
+
+            checkAchievements() {
+                const accuracy = this.getAccuracy();
+                
+                if (accuracy === 100 && this.gameState.errorsFound > 0) {
+                    this.achievements.push("Flawless Hunter! 🎯");
+                }
+                
+                if (this.gameState.errorsFound >= 5) {
+                    this.achievements.push("Eagle Eye! 👁️");
+                }
+                
+                if (this.gameState.score >= 500) {
+                    this.achievements.push("High Scorer! 🏆");
+                }
+                
+                if (this.gameState.errorsFound === this.gameState.totalErrors) {
+                    this.achievements.push("Completionist! ✅");
+                }
+                
+                if (this.calculateWPM() > 50) {
+                    this.achievements.push("Speed Demon! ⚡");
+                }
+                
+                if (this.gameState.currentDifficulty === 'expert' && accuracy > 80) {
+                    this.achievements.push("Expert Hunter! 🎖️");
+                }
+            }
+
+            displayAchievements() {
+                const achievementsEl = document.getElementById('achievements');
+                if (this.achievements.length > 0) {
+                    achievementsEl.innerHTML = '<h4>🏆 Achievements Unlocked:</h4>' + 
+                        this.achievements.map(achievement => 
+                            `<span class="achievement">${achievement}</span>`
+                        ).join('');
+                    achievementsEl.style.display = 'block';
+                } else {
+                    achievementsEl.style.display = 'none';
+                }
+            }
+
+            saveToLeaderboard() {
+                const entry = {
+                    score: this.gameState.score,
+                    difficulty: this.gameState.currentDifficulty,
+                    accuracy: this.getAccuracy(),
+                    errorsFound: this.gameState.errorsFound,
+                    totalErrors: this.gameState.totalErrors,
+                    wpm: this.calculateWPM(),
+                    date: new Date().toLocaleDateString()
+                };
+                
+                this.leaderboard.push(entry);
+                this.leaderboard.sort((a, b) => b.score - a.score);
+                this.leaderboard = this.leaderboard.slice(0, 10); // Keep top 10
+                
+                localStorage.setItem('typoHuntLeaderboard', JSON.stringify(this.leaderboard));
+                this.updateLeaderboard();
+            }
+
+            savePerformanceData() {
+                const data = {
+                    date: Date.now(),
+                    score: this.gameState.score,
+                    accuracy: this.getAccuracy(),
+                    wpm: this.calculateWPM(),
+                    difficulty: this.gameState.currentDifficulty
+                };
+                
+                this.performanceHistory.push(data);
+                this.performanceHistory = this.performanceHistory.slice(-20); // Keep last 20 games
+                
+                localStorage.setItem('typoHuntHistory', JSON.stringify(this.performanceHistory));
+                this.updatePerformanceChart();
+            }
+
+            updateLeaderboard() {
+                if (this.leaderboard.length === 0) {
+                    this.elements.leaderboard.style.display = 'none';
+                    return;
+                }
+                
+                const leaderboardHTML = this.leaderboard.map((entry, index) => `
+                    <div class="leaderboard-item">
+                        <span>#${index + 1} - ${entry.difficulty.toUpperCase()}</span>
+                        <span>${entry.score} pts (${entry.accuracy}% acc)</span>
+                    </div>
+                `).join('');
+                
+                document.getElementById('leaderboardList').innerHTML = leaderboardHTML;
+                this.elements.leaderboard.style.display = 'block';
+            }
+
+            updatePerformanceChart() {
+                if (this.performanceHistory.length < 2) return;
+                
+                const canvas = this.elements.performanceChart.querySelector('canvas');
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width = this.elements.performanceChart.offsetWidth;
+                const height = canvas.height = 150;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw performance trend
+                const maxScore = Math.max(...this.performanceHistory.map(d => d.score));
+                const minScore = Math.min(...this.performanceHistory.map(d => d.score));
+                const scoreRange = maxScore - minScore || 1;
+                
+                ctx.strokeStyle = '#4f46e5';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                this.performanceHistory.forEach((data, index) => {
+                    const x = (index / (this.performanceHistory.length - 1)) * (width - 40) + 20;
+                    const y = height - 20 - ((data.score - minScore) / scoreRange) * (height - 40);
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                // Draw points
+                ctx.fillStyle = '#4f46e5';
+                this.performanceHistory.forEach((data, index) => {
+                    const x = (index / (this.performanceHistory.length - 1)) * (width - 40) + 20;
+                    const y = height - 20 - ((data.score - minScore) / scoreRange) * (height - 40);
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+                
+                this.elements.performanceChart.style.display = 'block';
+            }
+
+            updateStats() {
+                this.elements.score.textContent = this.gameState.score;
+                this.elements.found.textContent = this.gameState.errorsFound;
+                this.elements.accuracy.textContent = `${this.getAccuracy()}%`;
+            }
+
+            playAgain() {
+                this.resetGame();
+                this.elements.gameOverScreen.classList.remove('show');
+                this.startGame();
+            }
+
+            newText() {
+                this.resetGame();
+                this.elements.gameOverScreen.classList.remove('show');
+            }
+
+            resetGame() {
+                clearInterval(this.gameTimer);
+                
+                this.gameState = {
+                    isPlaying: false,
+                    isPaused: false,
+                    currentDifficulty: this.gameState.currentDifficulty,
+                    timeLeft: 60,
+                    score: 0,
+                    errorsFound: 0,
+                    totalErrors: 0,
+                    clicks: 0,
+                    hintsLeft: 3,
+                    currentTextIndex: 0,
+                    startTime: null
+                };
+                
+                this.achievements = [];
+                
+                this.setGameDuration();
+                this.updateStats();
+                
+                this.elements.startBtn.style.display = 'inline-block';
+                this.elements.pauseBtn.style.display = 'none';
+                this.elements.hintBtn.style.display = 'inline-block';
+                this.elements.hintBtn.textContent = 'Get Hint (3 left)';
+                
+                this.elements.textArea.innerHTML = 
+                    'Click "Start Game" to begin your typo hunting adventure! Select your difficulty level and prepare to test your editing skills.';
+                
+                this.elements.progressCircle.style.strokeDashoffset = '0';
+            }
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new TypoHuntGame();
+        });
+    </script>
+</body>
+</html>
