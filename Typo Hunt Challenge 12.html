@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typo Hunt Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-medium: 0 12px 40px rgba(31, 38, 135, 0.5);
+            --shadow-heavy: 0 20px 60px rgba(31, 38, 135, 0.6);
+            --border-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--secondary-gradient);
+            border-radius: 2px;
+            animation: expandLine 1.5s ease-out;
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 20px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #fff, #e3f2fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 10px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            padding: 25px 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--shadow-light);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-medium);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-value {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 700;
+            background: var(--success-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .stat-label {
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.85rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-light);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-heavy);
+            filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            color: white;
+            border: 2px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 12px 25px;
+            border: 2px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .difficulty-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--secondary-gradient);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .difficulty-btn:hover::before,
+        .difficulty-btn.active::before {
+            left: 0;
+        }
+
+        .difficulty-btn.active,
+        .difficulty-btn:hover {
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .game-area {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow-heavy);
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out;
+            position: relative;
+        }
+
+        .game-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--success-gradient);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .text-passage {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            margin-bottom: 30px;
+            padding: 35px;
+            background: rgba(248, 249, 250, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.3);
+            user-select: none;
+            position: relative;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .text-passage::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: var(--primary-gradient);
+            border-radius: 0 5px 5px 0;
+        }
+
+        .text-passage p {
+            margin-bottom: 25px;
+        }
+
+        .word {
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+            display: inline-block;
+        }
+
+        .word:hover {
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .word.selected {
+            background: var(--warning-gradient);
+            color: white;
+            animation: pulse 0.6s ease-in-out;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .word.correct {
+            background: var(--success-gradient);
+            color: white;
+            animation: correctBounce 0.8s ease-in-out;
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .word.correct::after {
+            content: '✓';
+            position: absolute;
+            top: -10px;
+            right: -5px;
+            background: #4facfe;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            animation: checkmarkPop 0.5s ease-out;
+        }
+
+        .word.incorrect {
+            background: var(--warning-gradient);
+            color: white;
+            animation: errorShake 0.6s ease-in-out;
+            box-shadow: 0 6px 20px rgba(255, 135, 135, 0.4);
+        }
+
+        .word.incorrect::after {
+            content: '✗';
+            position: absolute;
+            top: -10px;
+            right: -5px;
+            background: #ff8787;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            animation: errorPop 0.5s ease-out;
+        }
+
+        .progress-bar, .timer-bar {
+            width: 100%;
+            background: rgba(233, 236, 239, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 12px;
+        }
+
+        .timer-bar {
+            height: 15px;
+        }
+
+        .progress-fill, .timer-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--success-gradient);
+        }
+
+        .timer-fill {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #fa709a 100%);
+        }
+
+        .progress-fill::before, .timer-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .results {
+            text-align: center;
+            padding: 50px 40px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            margin-top: 30px;
+            position: relative;
+        }
+
+        .results::before {
+            content: '🎉';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--glass-border);
+            animation: celebration 2s ease-out;
+        }
+
+        .score-display {
+            font-size: clamp(3rem, 6vw, 4rem);
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            animation: scoreGlow 2s ease-out;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 25px;
+            margin-top: 35px;
+        }
+
+        .metric {
+            padding: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 18px;
+            border: 2px solid var(--glass-border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--secondary-gradient);
+        }
+
+        .metric:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--shadow-medium);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .leaderboard h3 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .rank {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .combo-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8787);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+            transform: translateX(200px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .combo-display.show {
+            transform: translateX(0);
+        }
+
+        .hints {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 235, 59, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #ffeb3b;
+        }
+
+        .hint {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .game-area { padding: 20px; }
+            .text-passage { padding: 20px; font-size: 1rem; }
+            .score-display { font-size: 3rem; }
+        }
+        .leaderboard {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            margin-top: 30px;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .leaderboard h3 {
+            text-align: center;
+            background: var(--success-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .leaderboard h3::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--success-gradient);
+            border-radius: 2px;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .leaderboard-entry::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--success-gradient);
+        }
+
+        .leaderboard-entry:hover {
+            transform: translateX(10px);
+            background: rgba(255,255,255,0.15);
+            box-shadow: var(--shadow-light);
+        }
+
+        .rank {
+            font-weight: 700;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.4rem;
+            min-width: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Typo Hunt Challenge</h1>
+            <p>Test your proofreading skills and race against time to find every error!</p>
+        </div>
+
+        <div class="game-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="currentScore">0</div>
+                <div class="stat-label">Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="errorsFound">0</div>
+                <div class="stat-label">Errors Found</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="timeRemaining">60</div>
+                <div class="stat-label">Time Left</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="accuracy">100%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+        </div>
+
+        <div class="difficulty-selector">
+            <div class="difficulty-btn active" data-difficulty="easy">Easy (3 errors)</div>
+            <div class="difficulty-btn" data-difficulty="medium">Medium (5 errors)</div>
+            <div class="difficulty-btn" data-difficulty="hard">Hard (8 errors)</div>
+            <div class="difficulty-btn" data-difficulty="expert">Expert (12 errors)</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Start Hunt</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset Game</button>
+            <button class="btn btn-secondary" id="newTextBtn">New Text</button>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <div class="timer-bar">
+                <div class="timer-fill" id="timerFill"></div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="text-passage" id="textPassage">
+                <p>Click "Start Hunt" to begin your typo hunting adventure!</p>
+            </div>
+
+            <div class="hints">
+                <div class="hint">💡 Look for spelling errors, grammar mistakes, punctuation issues, and word usage problems</div>
+                <div class="hint">⚡ Build combos by finding errors quickly to multiply your score</div>
+                <div class="hint">🎯 Higher difficulty levels have more errors but offer greater rewards</div>
+            </div>
+        </div>
+
+        <div class="results hidden" id="results">
+            <h2>Hunt Complete!</h2>
+            <div class="score-display" id="finalScore">0</div>
+            <p id="performanceText">Great job!</p>
+            
+            <div class="performance-metrics">
+                <div class="metric">
+                    <div class="metric-value" id="totalErrors">0</div>
+                    <div class="metric-label">Errors Found</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="finalAccuracy">0%</div>
+                    <div class="metric-label">Accuracy</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="timeUsed">0s</div>
+                    <div class="metric-label">Time Used</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="wpm">0</div>
+                    <div class="metric-label">Words/Min</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="leaderboard">
+            <h3>🏆 Session Leaderboard</h3>
+            <div id="leaderboardList">
+                <p style="text-align: center; color: #666;">Complete a game to see your scores!</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="combo-display" id="comboDisplay">
+        Combo x2! 🔥
+    </div>
+
+    <script>
+        class TypoHuntGame {
+            constructor() {
+                this.score = 0;
+                this.errorsFound = 0;
+                this.totalClicks = 0;
+                this.timeLeft = 60;
+                this.isGameActive = false;
+                this.currentDifficulty = 'easy';
+                this.timer = null;
+                this.currentPassage = null;
+                this.startTime = null;
+                this.combo = 0;
+                this.lastCorrectTime = 0;
+                this.leaderboard = [];
+
+                this.passages = {
+                    easy: [
+                        {
+                            text: "The quick brown fox jumps over the lazy dog. This sentance contains several erors that need to be found. It's a clasic example used in typeing practice. The fox was very agile and quick on it's feet.",
+                            errors: [
+                                { word: "sentance", correction: "sentence", position: 12 },
+                                { word: "erors", correction: "errors", position: 15 },
+                                { word: "clasic", correction: "classic", position: 24 },
+                                { word: "typeing", correction: "typing", position: 27 },
+                                { word: "it's", correction: "its", position: 40 }
+                            ]
+                        },
+                        {
+                            text: "Writing good content requiers attention to detail. You must check for grammer mistakes and spelling erors. Always proofread you're work carefuly before submiting it to others.",
+                            errors: [
+                                { word: "requiers", correction: "requires", position: 3 },
+                                { word: "grammer", correction: "grammar", position: 11 },
+                                { word: "erors", correction: "errors", position: 15 },
+                                { word: "you're", correction: "your", position: 21 },
+                                { word: "carefuly", correction: "carefully", position: 23 }
+                            ]
+                        }
+                    ],
+                    medium: [
+                        {
+                            text: "The companys annual report showed remarkable growth threw the past year. Their strategy payed off, resulting in increased profits and market share. However, they must remain cautious about there future investments and ensure there making sound decisions.",
+                            errors: [
+                                { word: "companys", correction: "company's", position: 1 },
+                                { word: "threw", correction: "through", position: 6 },
+                                { word: "payed", correction: "paid", position: 11 },
+                                { word: "there", correction: "their", position: 25 },
+                                { word: "there", correction: "they're", position: 31 }
+                            ]
+                        },
+                        {
+                            text: "The new restaurant recieved excellent reviews for it's innovative menu. Customers appreciate the chefs attention to detail and the staffs friendly service. Its location downtown makes it easily accessable to many dinners.",
+                            errors: [
+                                { word: "recieved", correction: "received", position: 3 },
+                                { word: "it's", correction: "its", position: 7 },
+                                { word: "chefs", correction: "chef's", position: 12 },
+                                { word: "staffs", correction: "staff's", position: 17 },
+                                { word: "accessable", correction: "accessible", position: 25 },
+                                { word: "dinners", correction: "diners", position: 29 }
+                            ]
+                        }
+                    ],
+                    hard: [
+                        {
+                            text: "The commitee was responsable for organizing the annual conferance. They needed to coordinate with multiple venders and ensure all attendees recieved there materials on time. The event was a grate success, exept for a few minor issues that occured during the networking session.",
+                            errors: [
+                                { word: "commitee", correction: "committee", position: 1 },
+                                { word: "responsable", correction: "responsible", position: 3 },
+                                { word: "conferance", correction: "conference", position: 8 },
+                                { word: "venders", correction: "vendors", position: 14 },
+                                { word: "recieved", correction: "received", position: 19 },
+                                { word: "there", correction: "their", position: 20 },
+                                { word: "grate", correction: "great", position: 27 },
+                                { word: "exept", correction: "except", position: 30 },
+                                { word: "occured", correction: "occurred", position: 36 }
+                            ]
+                        }
+                    ],
+                    expert: [
+                        {
+                            text: "The principle investigater led a comprehensive study that analysed the affects of climate change on biodiversity. The research team collected data from various sources and carfully examined the correlations between temperature fluctuations and species migration patterns. Their findings were publised in a prestigous scientific journal after undergong rigorous peer review. The study reveiled significant trends that could potentialy influence future conservation strategies.",
+                            errors: [
+                                { word: "principle", correction: "principal", position: 1 },
+                                { word: "investigater", correction: "investigator", position: 2 },
+                                { word: "analysed", correction: "analyzed", position: 8 },
+                                { word: "affects", correction: "effects", position: 10 },
+                                { word: "carfully", correction: "carefully", position: 19 },
+                                { word: "publised", correction: "published", position: 32 },
+                                { word: "prestigous", correction: "prestigious", position: 35 },
+                                { word: "undergong", correction: "undergoing", position: 39 },
+                                { word: "reveiled", correction: "revealed", position: 44 },
+                                { word: "potentialy", correction: "potentially", position: 49 }
+                            ]
+                        }
+                    ]
+                };
+
+                this.initializeGame();
+            }
+
+            initializeGame() {
+                this.setupEventListeners();
+                this.updateDisplay();
+            }
+
+            setupEventListeners() {
+                document.getElementById('startBtn').addEventListener('click', () => this.startGame());
+                document.getElementById('resetBtn').addEventListener('click', () => this.resetGame());
+                document.getElementById('newTextBtn').addEventListener('click', () => this.loadNewText());
+
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.changeDifficulty(e.target.dataset.difficulty));
+                });
+            }
+
+            changeDifficulty(difficulty) {
+                this.currentDifficulty = difficulty;
+                document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('active');
+                
+                // Update time based on difficulty
+                const timeSettings = { easy: 90, medium: 75, hard: 60, expert: 45 };
+                this.timeLeft = timeSettings[difficulty];
+                this.updateDisplay();
+            }
+
+            startGame() {
+                if (this.isGameActive) return;
+                
+                this.isGameActive = true;
+                this.startTime = Date.now();
+                this.loadNewText();
+                this.startTimer();
+                
+                document.getElementById('startBtn').textContent = 'Game Active';
+                document.getElementById('startBtn').disabled = true;
+            }
+
+            loadNewText() {
+                const passages = this.passages[this.currentDifficulty];
+                this.currentPassage = passages[Math.floor(Math.random() * passages.length)];
+                
+                const textElement = document.getElementById('textPassage');
+                textElement.innerHTML = this.createClickableText(this.currentPassage.text);
+                
+                this.updateProgressBar();
+            }
+
+            createClickableText(text) {
+                const words = text.split(' ');
+                return words.map((word, index) => 
+                    `<span class="word" data-index="${index}">${word}</span>`
+                ).join(' ');
+            }
+
+            startTimer() {
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    this.updateTimerBar();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+            }
+
+            updateDisplay() {
+                document.getElementById('currentScore').textContent = this.score.toLocaleString();
+                document.getElementById('errorsFound').textContent = this.errorsFound;
+                document.getElementById('timeRemaining').textContent = this.timeLeft;
+                
+                const accuracy = this.totalClicks > 0 ? Math.round((this.errorsFound / this.totalClicks) * 100) : 100;
+                document.getElementById('accuracy').textContent = accuracy + '%';
+            }
+
+            updateTimerBar() {
+                const timeSettings = { easy: 90, medium: 75, hard: 60, expert: 45 };
+                const maxTime = timeSettings[this.currentDifficulty];
+                const percentage = (this.timeLeft / maxTime) * 100;
+                document.getElementById('timerFill').style.width = percentage + '%';
+            }
+
+            updateProgressBar() {
+                if (!this.currentPassage) return;
+                const percentage = (this.errorsFound / this.currentPassage.errors.length) * 100;
+                document.getElementById('progressFill').style.width = percentage + '%';
+            }
+
+            handleWordClick(wordElement, wordIndex) {
+                if (!this.isGameActive) return;
+                
+                this.totalClicks++;
+                const clickedWord = wordElement.textContent.replace(/[^\w]/g, '');
+                const isError = this.currentPassage.errors.some(error => 
+                    error.word === clickedWord && !wordElement.classList.contains('correct')
+                );
+
+                if (isError) {
+                    wordElement.classList.add('correct');
+                    this.errorsFound++;
+                    
+                    // Calculate score with combo multiplier
+                    const baseScore = this.getScoreForDifficulty();
+                    const currentTime = Date.now();
+                    
+                    if (currentTime - this.lastCorrectTime < 3000) { // 3 second window for combo
+                        this.combo = Math.min(this.combo + 1, 5);
+                    } else {
+                        this.combo = 1;
+                    }
+                    
+                    this.score += baseScore * this.combo;
+                    this.lastCorrectTime = currentTime;
+                    
+                    if (this.combo > 1) {
+                        this.showCombo();
+                    }
+                    
+                    this.updateProgressBar();
+                    
+                    // Check if all errors found
+                    if (this.errorsFound >= this.currentPassage.errors.length) {
+                        setTimeout(() => this.endGame(), 500);
+                    }
+                } else {
+                    wordElement.classList.add('incorrect');
+                    setTimeout(() => wordElement.classList.remove('incorrect'), 1000);
+                    this.combo = 0; // Reset combo on incorrect click
+                }
+                
+                this.updateDisplay();
+            }
+
+            getScoreForDifficulty() {
+                const scores = { easy: 100, medium: 150, hard: 200, expert: 300 };
+                return scores[this.currentDifficulty];
+            }
+
+            showCombo() {
+                const comboElement = document.getElementById('comboDisplay');
+                comboElement.textContent = `Combo x${this.combo}! 🔥`;
+                comboElement.classList.add('show');
+                
+                setTimeout(() => {
+                    comboElement.classList.remove('show');
+                }, 2000);
+            }
+
+            endGame() {
+                this.isGameActive = false;
+                clearInterval(this.timer);
+                
+                const timeUsed = Math.round((Date.now() - this.startTime) / 1000);
+                const accuracy = this.totalClicks > 0 ? Math.round((this.errorsFound / this.totalClicks) * 100) : 0;
+                const wpm = Math.round((this.errorsFound * 60) / timeUsed);
+                
+                // Bonus for finding all errors
+                if (this.errorsFound >= this.currentPassage.errors.length) {
+                    this.score += 1000;
+                }
+                
+                // Time bonus
+                const timeBonus = Math.max(0, this.timeLeft * 10);
+                this.score += timeBonus;
+                
+                this.showResults(timeUsed, accuracy, wpm);
+                this.saveToLeaderboard();
+                this.resetGameState();
+            }
+
+            showResults(timeUsed, accuracy, wpm) {
+                document.getElementById('finalScore').textContent = this.score.toLocaleString();
+                document.getElementById('totalErrors').textContent = this.errorsFound;
+                document.getElementById('finalAccuracy').textContent = accuracy + '%';
+                document.getElementById('timeUsed').textContent = timeUsed + 's';
+                document.getElementById('wpm').textContent = wpm;
+                
+                const performanceText = this.getPerformanceMessage(accuracy, wpm);
+                document.getElementById('performanceText').textContent = performanceText;
+                
+                document.getElementById('results').classList.remove('hidden');
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            getPerformanceMessage(accuracy, wpm) {
+                if (accuracy >= 90 && wpm >= 8) return "Outstanding performance! You're a proofreading master! 🌟";
+                if (accuracy >= 80 && wpm >= 6) return "Excellent work! Your attention to detail is impressive! 🎯";
+                if (accuracy >= 70 && wpm >= 4) return "Great job! You're developing strong editing skills! 👍";
+                if (accuracy >= 60) return "Good effort! Keep practicing to improve your accuracy! 📚";
+                return "Nice try! Practice makes perfect - keep hunting those typos! 💪";
+            }
+
+            saveToLeaderboard() {
+                const entry = {
+                    score: this.score,
+                    difficulty: this.currentDifficulty,
+                    accuracy: Math.round((this.errorsFound / this.totalClicks) * 100) || 0,
+                    errorsFound: this.errorsFound,
+                    date: new Date().toLocaleDateString()
+                };
+                
+                this.leaderboard.push(entry);
+                this.leaderboard.sort((a, b) => b.score - a.score);
+                this.leaderboard = this.leaderboard.slice(0, 5); // Keep top 5
+                this.updateLeaderboard();
+            }
+
+            updateLeaderboard() {
+                const leaderboardList = document.getElementById('leaderboardList');
+                
+                if (this.leaderboard.length === 0) {
+                    leaderboardList.innerHTML = '<p style="text-align: center; color: #666;">Complete a game to see your scores!</p>';
+                    return;
+                }
+                
+                leaderboardList.innerHTML = this.leaderboard.map((entry, index) => `
+                    <div class="leaderboard-entry">
+                        <div class="rank">#${index + 1}</div>
+                        <div>
+                            <strong>${entry.score.toLocaleString()}</strong> points
+                            <br>
+                            <small>${entry.difficulty} • ${entry.accuracy}% accuracy • ${entry.errorsFound} errors • ${entry.date}</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            resetGame() {
+                this.resetGameState();
+                document.getElementById('results').classList.add('hidden');
+                document.getElementById('textPassage').innerHTML = '<p>Click "Start Hunt" to begin your typo hunting adventure!</p>';
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('timerFill').style.width = '100%';
+            }
+
+            resetGameState() {
+                this.score = 0;
+                this.errorsFound = 0;
+                this.totalClicks = 0;
+                this.combo = 0;
+                const timeSettings = { easy: 90, medium: 75, hard: 60, expert: 45 };
+                this.timeLeft = timeSettings[this.currentDifficulty];
+                this.isGameActive = false;
+                this.currentPassage = null;
+                this.startTime = null;
+                this.lastCorrectTime = 0;
+                
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+                
+                document.getElementById('startBtn').textContent = 'Start Hunt';
+                document.getElementById('startBtn').disabled = false;
+                
+                // Remove all word classes
+                document.querySelectorAll('.word').forEach(word => {
+                    word.classList.remove('correct', 'incorrect', 'selected');
+                });
+                
+                this.updateDisplay();
+            }
+        }
+
+        // Initialize the game
+        const game = new TypoHuntGame();
+
+        // Add click event delegation for word clicking
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('word')) {
+                const wordIndex = parseInt(e.target.dataset.index);
+                game.handleWordClick(e.target, wordIndex);
+            }
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !game.isGameActive) {
+                e.preventDefault();
+                game.startGame();
+            } else if (e.code === 'Escape') {
+                game.resetGame();
+            } else if (e.code === 'KeyN') {
+                game.loadNewText();
+            }
+        });
+
+        // Add sound effects (optional enhancement)
+        const playSound = (type) => {
+            // Web Audio API sound generation for feedback
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'correct') {
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.1);
+            } else if (type === 'incorrect') {
+                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
+            } else if (type === 'complete') {
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+            }
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        };
+
+        // Enhanced word click handler with sound
+        const originalHandleWordClick = game.handleWordClick.bind(game);
+        game.handleWordClick = function(wordElement, wordIndex) {
+            const wasCorrect = this.currentPassage && this.currentPassage.errors.some(error => 
+                error.word === wordElement.textContent.replace(/[^\w]/g, '') && 
+                !wordElement.classList.contains('correct')
+            );
+            
+            originalHandleWordClick(wordElement, wordIndex);
+            
+            // Play sound after processing click
+            setTimeout(() => {
+                if (wordElement.classList.contains('correct')) {
+                    playSound('correct');
+                } else if (wordElement.classList.contains('incorrect')) {
+                    playSound('incorrect');
+                }
+            }, 50);
+        };
+
+        // Add game completion sound
+        const originalEndGame = game.endGame.bind(game);
+        game.endGame = function() {
+            originalEndGame();
+            setTimeout(() => playSound('complete'), 100);
+        };
+
+        // Add visual enhancements
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add floating particles animation (optional)
+            const createParticle = () => {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: fixed;
+                    width: 4px;
+                    height: 4px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: -1;
+                    animation: float 6s linear infinite;
+                    left: ${Math.random() * 100}vw;
+                    top: 100vh;
+                `;
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 6000);
+            };
+            
+            // Create particles periodically
+            setInterval(createParticle, 3000);
+            
+            // Add CSS animation for floating particles
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% {
+                        transform: translateY(0) rotate(0deg);
+                        opacity: 0;
+                    }
+                    10% {
+                        opacity: 1;
+                    }
+                    90% {
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(-100vh) rotate(360deg);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // Performance analytics
+        let performanceMetrics = {
+            totalGamesPlayed: 0,
+            averageScore: 0,
+            bestStreak: 0,
+            totalErrorsFound: 0
+        };
+
+        const updatePerformanceMetrics = (gameData) => {
+            performanceMetrics.totalGamesPlayed++;
+            performanceMetrics.totalErrorsFound += gameData.errorsFound;
+            performanceMetrics.averageScore = Math.round(
+                (performanceMetrics.averageScore * (performanceMetrics.totalGamesPlayed - 1) + gameData.score) / 
+                performanceMetrics.totalGamesPlayed
+            );
+            
+            // Add performance display to results
+            const metricsHTML = `
+                <div class="session-stats" style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">Session Statistics</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;">${performanceMetrics.totalGamesPlayed}</div>
+                            <div style="font-size: 0.8rem; color: #666;">Games Played</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;">${performanceMetrics.averageScore.toLocaleString()}</div>
+                            <div style="font-size: 0.8rem; color: #666;">Avg Score</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;">${performanceMetrics.totalErrorsFound}</div>
+                            <div style="font-size: 0.8rem; color: #666;">Total Errors</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('results').insertAdjacentHTML('beforeend', metricsHTML);
+        };
+
+        // Override the original saveToLeaderboard to include performance tracking
+        const originalSaveToLeaderboard = game.saveToLeaderboard.bind(game);
+        game.saveToLeaderboard = function() {
+            const gameData = {
+                score: this.score,
+                errorsFound: this.errorsFound,
+                accuracy: Math.round((this.errorsFound / this.totalClicks) * 100) || 0
+            };
+            
+            originalSaveToLeaderboard();
+            updatePerformanceMetrics(gameData);
+        };
+
+        // Add accessibility improvements
+        document.addEventListener('keydown', (e) => {
+            // Add tab navigation support
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.remove('keyboard-navigation');
+        });
+
+        // Add focus styles for accessibility
+        const accessibilityStyles = document.createElement('style');
+        accessibilityStyles.textContent = `
+            .keyboard-navigation .word:focus {
+                outline: 2px solid #667eea;
+                outline-offset: 2px;
+                background-color: rgba(102, 126, 234, 0.1);
+            }
+            
+            .keyboard-navigation .btn:focus,
+            .keyboard-navigation .difficulty-btn:focus {
+                outline: 2px solid #667eea;
+                outline-offset: 2px;
+            }
+            
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
+        `;
+        document.head.appendChild(accessibilityStyles);
+
+        console.log('🎯 Typo Hunt Challenge initialized successfully!');
+        console.log('🔧 Keyboard shortcuts: Space (start), Escape (reset), N (new text)');
+        console.log('🎮 Professional edition with advanced features loaded!');
+    </script>
+</body>
+</html>
