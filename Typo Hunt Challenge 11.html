@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typo Hunt Challenge - Professional Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            z-index: -2;
+            animation: backgroundShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes backgroundShift {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 2px 2px 4px rgba(0,0,0,0.3), 0 0 10px rgba(255,255,255,0.2); }
+            to { text-shadow: 2px 2px 4px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.4); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .game-setup {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.1),
+                0 1px 0 rgba(255,255,255,0.2) inset,
+                0 -1px 0 rgba(0,0,0,0.1) inset;
+            transform: translateY(0);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-setup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 1s ease;
+            z-index: 1;
+        }
+
+        .game-setup:hover::before {
+            left: 100%;
+        }
+
+        .game-setup:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.15),
+                0 1px 0 rgba(255,255,255,0.3) inset,
+                0 -1px 0 rgba(0,0,0,0.1) inset;
+        }
+
+        .game-setup > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .difficulty-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .difficulty-btn {
+            padding: 20px 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            color: #333;
+            box-shadow: 
+                0 8px 25px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .difficulty-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transition: all 0.6s ease;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .difficulty-btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        .difficulty-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 
+                0 20px 40px rgba(102,126,234,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .difficulty-btn.active::after {
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        }
+
+        .difficulty-btn h3, .difficulty-btn p {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .difficulty-btn h3 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .difficulty-btn p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24, #ff9ff3, #54a0ff);
+            background-size: 300% 300%;
+            animation: gradientShift 4s ease infinite;
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 8px 25px rgba(255,107,107,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .start-btn:hover::before {
+            left: 100%;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 15px 35px rgba(255,107,107,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .start-btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .start-btn:disabled {
+            background: linear-gradient(45deg, #bbb, #999);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: none;
+        }
+
+        .start-btn:disabled::before {
+            display: none;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.1),
+                0 1px 0 rgba(255,255,255,0.2) inset;
+            margin-bottom: 20px;
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-area::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(102,126,234,0.03) 60deg, transparent 120deg);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .game-area.active {
+            display: block;
+            animation: slideInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #ff6b6b;
+            background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.1),
+                0 4px 15px rgba(255,107,107,0.2);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            letter-spacing: 1px;
+        }
+
+        .timer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,107,107,0.1), transparent);
+            animation: timerPulse 2s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { opacity: 0; transform: translateX(-100%); }
+            50% { opacity: 1; transform: translateX(100%); }
+        }
+
+        .timer.warning {
+            color: #ff4757;
+            border-color: #ff4757;
+            animation: urgentPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes urgentPulse {
+            0%, 100% { transform: scale(1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 4px 15px rgba(255,71,87,0.2); }
+            50% { transform: scale(1.05); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 8px 25px rgba(255,71,87,0.4); }
+        }
+
+        .score {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(233, 236, 239, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: progressShimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes progressShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997, #17a2b8, #007bff);
+            background-size: 200% 100%;
+            animation: progressGradient 3s ease infinite;
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes progressGradient {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: progressHighlight 1.5s ease-in-out infinite;
+        }
+
+        @keyframes progressHighlight {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .text-content {
+            font-size: 1.2rem;
+            line-height: 1.9;
+            padding: 30px;
+            background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 2px solid rgba(222, 226, 230, 0.5);
+            min-height: 320px;
+            position: relative;
+            box-shadow: 
+                inset 0 1px 3px rgba(0,0,0,0.1),
+                0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .text-content:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 
+                inset 0 1px 3px rgba(0,0,0,0.1),
+                0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .error-word {
+            background: linear-gradient(120deg, rgba(255, 230, 230, 0.8), rgba(255, 204, 204, 0.6));
+            padding: 3px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+            position: relative;
+            display: inline-block;
+            margin: 0 1px;
+        }
+
+        .error-word::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24, #ff9ff3, #54a0ff);
+            border-radius: 8px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .error-word:hover::before {
+            opacity: 0.7;
+        }
+
+        .error-word:hover {
+            background: linear-gradient(120deg, rgba(255, 204, 204, 0.9), rgba(255, 153, 153, 0.7));
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            border-color: transparent;
+        }
+
+        .error-word.found {
+            background: linear-gradient(120deg, rgba(212, 237, 218, 0.9), rgba(195, 230, 203, 0.8));
+            border-color: #28a745;
+            animation: successPulse 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .error-word.found::before {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            opacity: 0.2;
+        }
+
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        .error-word.found:hover {
+            background: linear-gradient(120deg, rgba(212, 237, 218, 1), rgba(195, 230, 203, 0.9));
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .game-controls-active {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .hint-btn, .pause-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 300% 300%;
+            animation: buttonGradient 4s ease infinite;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 6px 20px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        @keyframes buttonGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hint-btn::before, .pause-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .hint-btn:hover::before, .pause-btn:hover::before {
+            left: 100%;
+        }
+
+        .hint-btn:hover, .pause-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 10px 30px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .hint-btn:active, .pause-btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .hint-display {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .results h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.9), rgba(233, 236, 239, 0.8));
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border-left: 4px solid #667eea;
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 8px 25px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(102,126,234,0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-left-color: #764ba2;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .performance-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 20px 0;
+            font-size: 1.2rem;
+        }
+
+        .badge-excellent {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .badge-good {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .badge-needs-improvement {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .play-again-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        }
+
+        .achievements {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .achievement {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .achievement.unlocked {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .achievement.locked {
+            background: #f8d7da;
+            color: #721c24;
+            opacity: 0.6;
+        }
+
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.1),
+                0 1px 0 rgba(255,255,255,0.2) inset;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .leaderboard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 300% 100%;
+            animation: leaderboardGradient 5s ease infinite;
+        }
+
+        @keyframes leaderboardGradient {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 0%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(233, 236, 239, 0.5);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .leaderboard-entry::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102,126,234,0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .leaderboard-entry:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .leaderboard-entry:hover::before {
+            left: 100%;
+        }
+
+        .leaderboard-rank {
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            min-width: 50px;
+        }
+
+        .leaderboard-entry:first-child {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,193,7,0.05));
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .leaderboard-entry:nth-child(2) {
+            background: linear-gradient(135deg, rgba(192,192,192,0.1), rgba(169,169,169,0.05));
+            border: 1px solid rgba(192,192,192,0.3);
+        }
+
+        .leaderboard-entry:nth-child(3) {
+            background: linear-gradient(135deg, rgba(205,127,50,0.1), rgba(184,115,51,0.05));
+            border: 1px solid rgba(205,127,50,0.3);
+        }
+
+        /* Enhanced Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+            }
+            
+            .game-setup, .game-area, .results, .leaderboard {
+                padding: 25px;
+                margin-bottom: 15px;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .difficulty-selector {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .difficulty-btn {
+                padding: 18px 20px;
+            }
+            
+            .text-content {
+                font-size: 1.1rem;
+                padding: 20px;
+                line-height: 1.7;
+            }
+            
+            .timer {
+                font-size: 1.4rem;
+                padding: 10px 18px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .hint-btn, .pause-btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+            
+            .leaderboard-entry {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-controls-active {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .start-btn {
+                padding: 15px 25px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Enhanced Animation Performance */
+        .difficulty-btn,
+        .start-btn,
+        .hint-btn,
+        .pause-btn,
+        .error-word,
+        .stat-card,
+        .leaderboard-entry {
+            will-change: transform;
+        }
+
+        /* Accessibility Improvements */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus States for Better Accessibility */
+        .difficulty-btn:focus,
+        .start-btn:focus,
+        .hint-btn:focus,
+        .pause-btn:focus,
+        .play-again-btn:focus {
+            outline: 3px solid rgba(102, 126, 234, 0.5);
+            outline-offset: 2px;
+        }
+
+        .error-word:focus {
+            outline: 2px solid rgba(255, 107, 107, 0.7);
+            outline-offset: 1px;
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            .game-setup,
+            .game-area,
+            .results,
+            .leaderboard {
+                background: rgba(33, 37, 41, 0.95);
+                border-color: rgba(255, 255, 255, 0.1);
+                color: #f8f9fa;
+            }
+            
+            .text-content {
+                background: rgba(52, 58, 64, 0.8);
+                border-color: rgba(108, 117, 125, 0.5);
+                color: #f8f9fa;
+            }
+            
+            .timer {
+                background: rgba(52, 58, 64, 0.8);
+                color: #ff6b6b;
+            }
+            
+            .stat-card {
+                background: linear-gradient(135deg, rgba(52, 58, 64, 0.9), rgba(73, 80, 87, 0.8));
+            }
+            
+            .stat-label {
+                color: #adb5bd;
+            }
+        }
+        .results {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 
+                0 25px 50px rgba(0,0,0,0.15),
+                0 1px 0 rgba(255,255,255,0.2) inset;
+            text-align: center;
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .results::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, 
+                rgba(102,126,234,0.05) 0deg, 
+                rgba(118,75,162,0.05) 90deg, 
+                rgba(255,107,107,0.05) 180deg, 
+                rgba(84,160,255,0.05) 270deg, 
+                rgba(102,126,234,0.05) 360deg);
+            animation: rotate 30s linear infinite;
+            z-index: -1;
+        }
+
+        .results.active {
+            display: block;
+            animation: resultsEntrance 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes resultsEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9) rotateX(15deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotateX(0deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Typo Hunt Challenge</h1>
+            <p class="subtitle">Professional Edition - Test Your Editorial Skills</p>
+        </div>
+
+        <div class="game-setup" id="gameSetup">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Choose Your Challenge</h2>
+            
+            <div class="difficulty-selector">
+                <div class="difficulty-btn" data-level="beginner">
+                    <h3>📝 Beginner</h3>
+                    <p>5 errors • 2 minutes • Basic typos</p>
+                </div>
+                <div class="difficulty-btn" data-level="intermediate">
+                    <h3>✏️ Intermediate</h3>
+                    <p>8 errors • 90 seconds • Grammar & typos</p>
+                </div>
+                <div class="difficulty-btn" data-level="advanced">
+                    <h3>🎯 Advanced</h3>
+                    <p>12 errors • 75 seconds • Complex errors</p>
+                </div>
+                <div class="difficulty-btn" data-level="expert">
+                    <h3>🏆 Expert</h3>
+                    <p>15 errors • 60 seconds • All error types</p>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <div>
+                    <label>
+                        <input type="checkbox" id="hintMode"> Enable Hints
+                    </label>
+                </div>
+                <button class="start-btn" id="startGame" disabled>Select Difficulty to Start</button>
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <div class="game-header">
+                <div class="timer" id="timer">0:00</div>
+                <div class="score">
+                    Score: <span id="score">0</span> / <span id="totalErrors">0</span>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="text-content" id="textContent">
+                <!-- Text will be loaded here -->
+            </div>
+
+            <div class="game-controls-active">
+                <button class="hint-btn" id="hintBtn">💡 Get Hint</button>
+                <button class="pause-btn" id="pauseBtn">⏸️ Pause</button>
+            </div>
+
+            <div class="hint-display" id="hintDisplay">
+                <!-- Hints will appear here -->
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>Challenge Complete!</h2>
+            <div class="performance-badge" id="performanceBadge">
+                <!-- Performance badge will be shown here -->
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="finalScore">0</div>
+                    <div class="stat-label">Errors Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="timeUsed">0s</div>
+                    <div class="stat-label">Time Used</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="wpm">0</div>
+                    <div class="stat-label">Words Per Minute</div>
+                </div>
+            </div>
+
+            <div class="achievements" id="achievements">
+                <h3 style="margin-bottom: 15px;">🏆 Achievements</h3>
+                <!-- Achievements will be populated here -->
+            </div>
+
+            <button class="play-again-btn" onclick="resetGame()">Play Again</button>
+        </div>
+
+        <div class="leaderboard" id="leaderboard">
+            <h2 style="color: #667eea; margin-bottom: 20px;">🏆 Leaderboard</h2>
+            <div id="leaderboardEntries">
+                <!-- Leaderboard entries will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TypoHuntGame {
+            constructor() {
+                this.currentLevel = null;
+                this.gameTimer = null;
+                this.timeLeft = 0;
+                this.totalTime = 0;
+                this.score = 0;
+                this.totalErrors = 0;
+                this.errorsFound = [];
+                this.gameActive = false;
+                this.hintMode = false;
+                this.hintsUsed = 0;
+                this.gameData = {};
+                this.startTime = 0;
+                this.leaderboardData = this.loadLeaderboard();
+                
+                this.initializeGame();
+                this.loadLeaderboard();
+                this.displayLeaderboard();
+            }
+
+            initializeGame() {
+                this.setupEventListeners();
+                this.loadGameTexts();
+            }
+
+            loadGameTexts() {
+                this.gameTexts = {
+                    beginner: {
+                        time: 120,
+                        text: `The quick brown fox jumps over the lazy dog. This sentence contains several mispelled words that you need to find. The fox was runing very fast, and it's tail was wagging behind it. There were alot of animals watching from the forest. The dog was sleeping peacefuly under the tree when the fox jumped over him.`,
+                        errors: [
+                            {word: 'mispelled', correct: 'misspelled', type: 'spelling', hint: 'Double check the spelling of words ending in -ed'},
+                            {word: 'runing', correct: 'running', type: 'spelling', hint: 'This word needs double consonant'},
+                            {word: "it's", correct: 'its', type: 'grammar', hint: 'Possessive pronouns don\'t use apostrophes'},
+                            {word: 'alot', correct: 'a lot', type: 'spacing', hint: 'This should be two words'},
+                            {word: 'peacefuly', correct: 'peacefully', type: 'spelling', hint: 'Check the suffix spelling'}
+                        ]
+                    },
+                    intermediate: {
+                        time: 90,
+                        text: `The companys annual report shows significant growth in there revenue streams. However, they're marketing strategy needs improvement to maintain this momentem. The board of directors are meeting tomorrow to discus the new initiatives. It's important that everyone attends this crucial meeting, irregardless of there schedule conflicts.`,
+                        errors: [
+                            {word: 'companys', correct: 'company\'s', type: 'punctuation', hint: 'Possessive nouns need apostrophes'},
+                            {word: 'there', correct: 'their', type: 'grammar', hint: 'Wrong form of there/their/they\'re'},
+                            {word: 'momentem', correct: 'momentum', type: 'spelling', hint: 'Check the ending of this physics term'},
+                            {word: 'are', correct: 'is', type: 'grammar', hint: 'Subject-verb agreement issue'},
+                            {word: 'discus', correct: 'discuss', type: 'spelling', hint: 'This verb needs double s'},
+                            {word: 'irregardless', correct: 'regardless', type: 'usage', hint: 'This is not a standard word'},
+                            {word: 'there', correct: 'their', type: 'grammar', hint: 'Wrong form of there/their/they\'re'},
+                            {word: 'attends', correct: 'attend', type: 'grammar', hint: 'Subject-verb agreement with "everyone"'}
+                        ]
+                    },
+                    advanced: {
+                        time: 75,
+                        text: `The research indicates that the phenomena is more complex than originally thought. Data suggests that the affects of climate change will effect agricultural productivity significantly. The scientist's have been studying this issue for over a decade, and there findings are quite alarming. Between you and I, the situation requires immediate action from policy makers who's decisions will impact future generations.`,
+                        errors: [
+                            {word: 'phenomena', correct: 'phenomenon', type: 'grammar', hint: 'Singular vs plural form'},
+                            {word: 'affects', correct: 'effects', type: 'usage', hint: 'Affect vs effect confusion'},
+                            {word: 'effect', correct: 'affect', type: 'usage', hint: 'Effect vs affect confusion'},
+                            {word: "scientist's", correct: 'scientists', type: 'punctuation', hint: 'Plural, not possessive'},
+                            {word: 'there', correct: 'their', type: 'grammar', hint: 'Wrong form of there/their/they\'re'},
+                            {word: 'I', correct: 'me', type: 'grammar', hint: 'Object pronoun needed'},
+                            {word: "who's", correct: 'whose', type: 'grammar', hint: 'Possessive, not contraction'},
+                            {word: 'Data suggests', correct: 'Data suggest', type: 'grammar', hint: 'Data is plural'},
+                            {word: 'originally', correct: 'originally', type: 'spelling', hint: 'Double-check this adverb'},
+                            {word: 'policy makers', correct: 'policymakers', type: 'spacing', hint: 'This compound word is usually one word'},
+                            {word: 'over a decade', correct: 'for more than a decade', type: 'style', hint: 'More precise phrasing'},
+                            {word: 'quite alarming', correct: 'very alarming', type: 'style', hint: 'More formal tone needed'}
+                        ]
+                    },
+                    expert: {
+                        time: 60,
+                        text: `The committee's recommendations are based on comprehensive data that was collected from various sources. Each member brought their unique perspective to the deliberations, ensuring that all viewpoints were considered. The principle investigator, along with her colleagues, have been working tirelessly to complete this important work. The findings will be presented to the board, whom will make the final decision regarding implementation of the new protocols.`,
+                        errors: [
+                            {word: 'was', correct: 'were', type: 'grammar', hint: 'Data is plural'},
+                            {word: 'their', correct: 'his or her', type: 'grammar', hint: 'Pronoun agreement with "each"'},
+                            {word: 'principle', correct: 'principal', type: 'usage', hint: 'Principal vs principle confusion'},
+                            {word: 'have', correct: 'has', type: 'grammar', hint: 'Subject-verb agreement with "along with"'},
+                            {word: 'whom', correct: 'who', type: 'grammar', hint: 'Subject vs object pronoun'},
+                            {word: 'regarding', correct: 'of', type: 'style', hint: 'More concise preposition'},
+                            {word: 'viewpoints', correct: 'perspectives', type: 'redundancy', hint: 'Avoid repetition with earlier word'},
+                            {word: 'tirelessly', correct: 'diligently', type: 'style', hint: 'More professional tone'},
+                            {word: 'important work', correct: 'crucial research', type: 'style', hint: 'More specific and formal'},
+                            {word: 'complete', correct: 'finalize', type: 'word choice', hint: 'More precise verb'},
+                            {word: 'ensuring that', correct: 'ensuring', type: 'redundancy', hint: 'Remove unnecessary words'},
+                            {word: 'comprehensive', correct: 'extensive', type: 'style', hint: 'Vary vocabulary'},
+                            {word: 'various sources', correct: 'multiple sources', type: 'style', hint: 'More precise modifier'},
+                            {word: 'deliberations', correct: 'discussions', type: 'style', hint: 'Simpler word choice'},
+                            {word: 'implementation of the', correct: 'implementing the', type: 'conciseness', hint: 'More concise phrasing'}
+                        ]
+                    }
+                };
+            }
+
+            setupEventListeners() {
+                // Difficulty selection
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.selectDifficulty(btn.dataset.level));
+                });
+
+                // Start game
+                document.getElementById('startGame').addEventListener('click', () => this.startGame());
+
+                // Game controls
+                document.getElementById('hintBtn').addEventListener('click', () => this.showHint());
+                document.getElementById('pauseBtn').addEventListener('click', () => this.pauseGame());
+            }
+
+            selectDifficulty(level) {
+                document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-level="${level}"]`).classList.add('active');
+                
+                this.currentLevel = level;
+                document.getElementById('startGame').disabled = false;
+                document.getElementById('startGame').textContent = `Start ${level.charAt(0).toUpperCase() + level.slice(1)} Challenge`;
+            }
+
+            startGame() {
+                if (!this.currentLevel) return;
+
+                this.gameData = this.gameTexts[this.currentLevel];
+                this.timeLeft = this.gameData.time;
+                this.totalTime = this.gameData.time;
+                this.score = 0;
+                this.totalErrors = this.gameData.errors.length;
+                this.errorsFound = [];
+                this.gameActive = true;
+                this.hintMode = document.getElementById('hintMode').checked;
+                this.hintsUsed = 0;
+                this.startTime = Date.now();
+
+                // Hide setup, show game
+                document.getElementById('gameSetup').style.display = 'none';
+                document.getElementById('gameArea').classList.add('active');
+                document.getElementById('results').classList.remove('active');
+
+                this.displayGameText();
+                this.updateDisplay();
+                this.startTimer();
+            }
+
+            displayGameText() {
+                const textContent = document.getElementById('textContent');
+                let displayText = this.gameData.text;
+
+                // Wrap error words in spans
+                this.gameData.errors.forEach((error, index) => {
+                    const regex = new RegExp(`\\b${error.word}\\b`, 'g');
+                    displayText = displayText.replace(regex, `<span class="error-word" data-error="${index}">${error.word}</span>`);
+                });
+
+                textContent.innerHTML = displayText;
+
+                // Add click listeners to error words
+                document.querySelectorAll('.error-word').forEach(word => {
+                    word.addEventListener('click', (e) => this.checkError(e.target));
+                });
+
+                document.getElementById('totalErrors').textContent = this.totalErrors;
+            }
+
+            checkError(element) {
+                if (!this.gameActive) return;
+
+                const errorIndex = parseInt(element.dataset.error);
+                
+                if (!this.errorsFound.includes(errorIndex)) {
+                    this.errorsFound.push(errorIndex);
+                    element.classList.add('found');
+                    this.score++;
+                    this.updateDisplay();
+
+                    // Check if all errors found
+                    if (this.score === this.totalErrors) {
+                        this.endGame(true);
+                    }
+                }
+            }
+
+            showHint() {
+                if (!this.gameActive || !this.hintMode) return;
+
+                const remainingErrors = this.gameData.errors.filter((error, index) => 
+                    !this.errorsFound.includes(index)
+                );
+
+                if (remainingErrors.length > 0) {
+                    const randomError = remainingErrors[Math.floor(Math.random() * remainingErrors.length)];
+                    const hintDisplay = document.getElementById('hintDisplay');
+                    hintDisplay.innerHTML = `<strong>Hint:</strong> ${randomError.hint}`;
+                    hintDisplay.style.display = 'block';
+                    this.hintsUsed++;
+
+                    setTimeout(() => {
+                        hintDisplay.style.display = 'none';
+                    }, 5000);
+                }
+            }
+
+            pauseGame() {
+                if (!this.gameActive) return;
+                
+                this.gameActive = false;
+                clearInterval(this.gameTimer);
+                
+                const pauseBtn = document.getElementById('pauseBtn');
+                pauseBtn.textContent = '▶️ Resume';
+                pauseBtn.onclick = () => this.resumeGame();
+            }
+
+            resumeGame() {
+                this.gameActive = true;
+                this.startTimer();
+                
+                const pauseBtn = document.getElementById('pauseBtn');
+                pauseBtn.textContent = '⏸️ Pause';
+                pauseBtn.onclick = () => this.pauseGame();
+            }
+
+            startTimer() {
+                this.gameTimer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+
+                    if (this.timeLeft <= 0) {
+                        this.endGame(false);
+                    }
+                }, 1000);
+            }
+
+            updateDisplay() {
+                // Update timer with enhanced visuals
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                const timerElement = document.getElementById('timer');
+                timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Add warning class when time is running low
+                if (this.timeLeft <= 30) {
+                    timerElement.classList.add('warning');
+                } else {
+                    timerElement.classList.remove('warning');
+                }
+
+                // Update score
+                document.getElementById('score').textContent = this.score;
+
+                // Update progress bar with smooth animation
+                const progress = (this.score / this.totalErrors) * 100;
+                const progressFill = document.getElementById('progressFill');
+                progressFill.style.width = `${progress}%`;
+                
+                // Add completion effects
+                if (progress === 100) {
+                    progressFill.style.background = 'linear-gradient(90deg, #28a745, #20c997, #17a2b8, #ffc107)';
+                }
+            }
+
+            endGame(completed) {
+                this.gameActive = false;
+                clearInterval(this.gameTimer);
+
+                const timeUsed = this.totalTime - this.timeLeft;
+                const accuracy = Math.round((this.score / this.totalErrors) * 100);
+                const wordsPerMinute = Math.round((this.gameData.text.split(' ').length / timeUsed) * 60);
+
+                // Save to leaderboard
+                this.saveScore({
+                    level: this.currentLevel,
+                    score: this.score,
+                    totalErrors: this.totalErrors,
+                    accuracy: accuracy,
+                    timeUsed: timeUsed,
+                    wpm: wordsPerMinute,
+                    hintsUsed: this.hintsUsed,
+                    date: new Date().toLocaleDateString()
+                });
+
+                // Show results
+                this.showResults(completed, accuracy, timeUsed, wordsPerMinute);
+            }
+
+            showResults(completed, accuracy, timeUsed, wordsPerMinute) {
+                document.getElementById('gameArea').classList.remove('active');
+                document.getElementById('results').classList.add('active');
+
+                // Update stats
+                document.getElementById('finalScore').textContent = `${this.score}/${this.totalErrors}`;
+                document.getElementById('accuracy').textContent = `${accuracy}%`;
+                document.getElementById('timeUsed').textContent = `${timeUsed}s`;
+                document.getElementById('wpm').textContent = wordsPerMinute;
+
+                // Performance badge
+                const badge = document.getElementById('performanceBadge');
+                if (accuracy >= 90 && this.score === this.totalErrors) {
+                    badge.className = 'performance-badge badge-excellent';
+                    badge.textContent = '🏆 Excellent Performance!';
+                } else if (accuracy >= 70) {
+                    badge.className = 'performance-badge badge-good';
+                    badge.textContent = '👍 Good Job!';
+                } else {
+                    badge.className = 'performance-badge badge-needs-improvement';
+                    badge.textContent = '📚 Keep Practicing!';
+                }
+
+                // Show achievements
+                this.updateAchievements(accuracy, timeUsed, wordsPerMinute);
+                this.displayLeaderboard();
+            }
+
+            updateAchievements(accuracy, timeUsed, wordsPerMinute) {
+                const achievementsContainer = document.getElementById('achievements');
+                const achievements = [
+                    { id: 'perfect', name: 'Perfect Score', description: 'Found all errors', condition: this.score === this.totalErrors },
+                    { id: 'speed', name: 'Speed Demon', description: 'Completed in under 30 seconds', condition: timeUsed < 30 },
+                    { id: 'accuracy', name: 'Eagle Eye', description: '95%+ accuracy', condition: accuracy >= 95 },
+                    { id: 'noHints', name: 'Independent', description: 'Completed without hints', condition: this.hintsUsed === 0 },
+                    { id: 'expert', name: 'Expert Level', description: 'Completed expert difficulty', condition: this.currentLevel === 'expert' },
+                    { id: 'fastReader', name: 'Speed Reader', description: '200+ WPM', condition: wordsPerMinute >= 200 }
+                ];
+
+                let achievementsHTML = '';
+                achievements.forEach(achievement => {
+                    const unlocked = achievement.condition;
+                    achievementsHTML += `
+                        <div class="achievement ${unlocked ? 'unlocked' : 'locked'}">
+                            <span>${unlocked ? '🏆' : '🔒'}</span>
+                            <div>
+                                <strong>${achievement.name}</strong>
+                                <div style="font-size: 0.9em; opacity: 0.8;">${achievement.description}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                achievementsContainer.innerHTML = `
+                    <h3 style="margin-bottom: 15px;">🏆 Achievements</h3>
+                    ${achievementsHTML}
+                `;
+            }
+
+            saveScore(scoreData) {
+                if (!this.leaderboardData) this.leaderboardData = [];
+                this.leaderboardData.push(scoreData);
+                
+                // Keep only top 10 scores
+                this.leaderboardData.sort((a, b) => {
+                    if (a.accuracy !== b.accuracy) return b.accuracy - a.accuracy;
+                    if (a.score !== b.score) return b.score - a.score;
+                    return a.timeUsed - b.timeUsed;
+                });
+                
+                if (this.leaderboardData.length > 10) {
+                    this.leaderboardData = this.leaderboardData.slice(0, 10);
+                }
+
+                // In a real application, this would save to localStorage or a server
+                // For this demo, we'll keep it in memory
+            }
+
+            loadLeaderboard() {
+                // In a real application, this would load from localStorage or a server
+                // For demo purposes, we'll create some sample data
+                this.leaderboardData = [
+                    { level: 'expert', score: 15, totalErrors: 15, accuracy: 100, timeUsed: 45, wpm: 180, date: '2025-08-08' },
+                    { level: 'advanced', score: 11, totalErrors: 12, accuracy: 92, timeUsed: 60, wpm: 165, date: '2025-08-07' },
+                    { level: 'intermediate', score: 8, totalErrors: 8, accuracy: 100, timeUsed: 75, wpm: 140, date: '2025-08-06' },
+                    { level: 'expert', score: 13, totalErrors: 15, accuracy: 87, timeUsed: 55, wpm: 170, date: '2025-08-05' },
+                    { level: 'beginner', score: 5, totalErrors: 5, accuracy: 100, timeUsed: 90, wpm: 120, date: '2025-08-04' }
+                ];
+                return this.leaderboardData;
+            }
+
+            displayLeaderboard() {
+                const container = document.getElementById('leaderboardEntries');
+                let leaderboardHTML = '';
+
+                this.leaderboardData.forEach((entry, index) => {
+                    const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                    leaderboardHTML += `
+                        <div class="leaderboard-entry">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="leaderboard-rank">${rankEmoji}</div>
+                                <div>
+                                    <div style="font-weight: bold;">${entry.level.charAt(0).toUpperCase() + entry.level.slice(1)}</div>
+                                    <div style="font-size: 0.9em; color: #6c757d;">${entry.date}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: bold;">${entry.score}/${entry.totalErrors} (${entry.accuracy}%)</div>
+                                <div style="font-size: 0.9em; color: #6c757d;">${entry.timeUsed}s • ${entry.wpm} WPM</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = leaderboardHTML;
+            }
+        }
+
+        // Global functions for buttons
+        function resetGame() {
+            document.getElementById('gameSetup').style.display = 'block';
+            document.getElementById('gameArea').classList.remove('active');
+            document.getElementById('results').classList.remove('active');
+            
+            // Reset selections
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('startGame').disabled = true;
+            document.getElementById('startGame').textContent = 'Select Difficulty to Start';
+            document.getElementById('hintMode').checked = false;
+            
+            // Reset pause button
+            const pauseBtn = document.getElementById('pauseBtn');
+            pauseBtn.textContent = '⏸️ Pause';
+            pauseBtn.onclick = () => game.pauseGame();
+        }
+
+        // Initialize the game when the page loads
+        let game;
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new TypoHuntGame();
+        });
+
+        // Add some dynamic visual effects
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add floating particles background effect
+            const createFloatingParticles = () => {
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.style.cssText = `
+                        position: fixed;
+                        width: 4px;
+                        height: 4px;
+                        background: rgba(255,255,255,0.3);
+                        border-radius: 50%;
+                        pointer-events: none;
+                        animation: float ${5 + Math.random() * 10}s infinite linear;
+                        left: ${Math.random() * 100}vw;
+                        top: ${Math.random() * 100}vh;
+                        z-index: -1;
+                    `;
+                    document.body.appendChild(particle);
+                }
+            };
+
+            // Add CSS animation for particles
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+                    10% { opacity: 1; }
+                    90% { opacity: 1; }
+                    100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            createFloatingParticles();
+
+            // Add hover effects to cards
+            document.querySelectorAll('.stat-card, .leaderboard-entry').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
